@@ -53,10 +53,8 @@ pip install -r requirements.txt
 ## Сбор данных
 
 1. Создайте файл `.env` на основе `.env.example` и заполните его своими данными:
-```
-API_ID=your_api_id_here        # Получите на https://my.telegram.org
-API_HASH=your_api_hash_here    # Получите на https://my.telegram.org
-PHONE=your_phone_number_here   # В формате +7XXXXXXXXXX
+```bash
+cp .env.example .env
 ```
 
 2. Запустите сбор данных и создание индекса:
@@ -69,24 +67,19 @@ python collect_and_index.py
 ### Консольный интерфейс
 
 ```bash
-python cli.py \
-  --database-path path/to/your/database.sqlite \
-  --methods lowcase normalize_spaces special_chars remove_stopwords lemmatize_text \
-  search "ваш поисковый запрос"
+python cli.py --database-path data/telegram_data.sqlite --methods lowcase normalize_spaces special_chars remove_stopwords lemmatize_text search "ваш запрос"
 ```
 
 ### HTTP API
 
 Запустите сервер:
 ```bash
-python app.py \
-  --database-path path/to/your/database.sqlite \
-  --methods lowcase normalize_spaces special_chars remove_stopwords lemmatize_text
+python app.py --database-path data/telegram_data.sqlite --methods lowcase normalize_spaces special_chars remove_stopwords lemmatize_text
 ```
 
 Выполните поиск через HTTP:
 ```bash
-curl "http://localhost:5000/documents?q=ваш+поисковый+запрос"
+curl "http://localhost:5000/documents?q=ваш+запрос"
 ```
 
 ## Структура проекта
@@ -114,10 +107,34 @@ curl "http://localhost:5000/documents?q=ваш+поисковый+запрос"
    - Настраиваемый пайплайн обработки
    - Эффективная лемматизация
 
-## Тестирование производительности
+## Разработка
 
-Проект протестирован на коллекции из ~40,000 документов социальной сети. Основные метрики:
-- Время индексации
-- Скорость поиска
-- Эффективность сжатия
-- Качество поиска для запросов, связанных с СПбГУ/МГУ
+Проект разработан с использованием следующих технологий и подходов:
+
+1. **Архитектура:**
+   - Модульная структура с четким разделением ответственности
+   - Использование паттерна Repository для работы с данными
+   - Асинхронный сбор данных из Telegram API
+
+2. **Оптимизация:**
+   - Эффективные алгоритмы сжатия для уменьшения размера индекса
+   - Оптимизированная структура данных для быстрого поиска
+   - Кэширование результатов для улучшения производительности
+
+3. **Масштабируемость:**
+   - Поддержка инкрементального обновления индекса
+   - Возможность параллельной обработки документов
+   - Гибкая конфигурация через параметры командной строки
+
+4. **Безопасность:**
+   - Безопасное хранение учетных данных Telegram API
+   - Валидация входных данных
+   - Защита от SQL-инъекций
+
+## Авторы
+
+Проект разработан в рамках курса по информационному поиску.
+
+API_ID: [вам нужно ввести]
+API_HASH: [вам нужно ввести]
+PHONE: [вам нужно ввести]
