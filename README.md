@@ -8,24 +8,29 @@
 
 ### Основные возможности
 
-1. **Полнотекстовый поиск:**
+1. **Сбор данных:**
+   - Автоматический сбор публикаций из Telegram-каналов университетов (МГУ и СПбГУ)
+   - Сохранение данных в SQLite базу данных
+   - Сбор метаданных (просмотры, репосты)
+
+2. **Полнотекстовый поиск:**
    - Быстрый поиск по коллекции документов
    - Поддержка различных методов предобработки текста
    - Эффективное хранение и доступ к индексу
 
-2. **Методы предобработки текста:**
+3. **Методы предобработки текста:**
    - Приведение к нижнему регистру (`lowcase`)
    - Нормализация пробелов (`normalize_spaces`)
    - Удаление специальных символов (`special_chars`)
    - Удаление стоп-слов (`remove_stopwords`)
    - Лемматизация (`lemmatize_text`)
 
-3. **Алгоритмы сжатия:**
+4. **Алгоритмы сжатия:**
    - Elias Gamma coding
    - Elias Delta coding
    - Возможность работы без сжатия для сравнения эффективности
 
-4. **Интерфейсы доступа:**
+5. **Интерфейсы доступа:**
    - Консольное приложение (CLI)
    - HTTP API для веб-доступа
 
@@ -45,28 +50,43 @@ python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 ```
 
+## Сбор данных
+
+1. Создайте файл `.env` на основе `.env.example` и заполните его своими данными:
+```
+API_ID=your_api_id_here        # Получите на https://my.telegram.org
+API_HASH=your_api_hash_here    # Получите на https://my.telegram.org
+PHONE=your_phone_number_here   # В формате +7XXXXXXXXXX
+```
+
+2. Запустите сбор данных и создание индекса:
+```bash
+python collect_and_index.py
+```
+
 ## Использование
 
 ### Консольный интерфейс
 
 ```bash
 python cli.py \
-  --database-path path/to/db.sqlite \
+  --database-path path/to/your/database.sqlite \
   --methods lowcase normalize_spaces special_chars remove_stopwords lemmatize_text \
-  [--encoding delta|gamma] \
-  search "Ректор СПбГУ"
+  search "ваш поисковый запрос"
 ```
 
 ### HTTP API
 
 Запустите сервер:
 ```bash
-python app.py --database-path path/to/db.sqlite --methods lowcase normalize_spaces special_chars remove_stopwords lemmatize_text
+python app.py \
+  --database-path path/to/your/database.sqlite \
+  --methods lowcase normalize_spaces special_chars remove_stopwords lemmatize_text
 ```
 
 Выполните поиск через HTTP:
 ```bash
-curl "http://localhost:5000/documents?q=Ректор+СПбГУ"
+curl "http://localhost:5000/documents?q=ваш+поисковый+запрос"
 ```
 
 ## Структура проекта
@@ -101,7 +121,3 @@ curl "http://localhost:5000/documents?q=Ректор+СПбГУ"
 - Скорость поиска
 - Эффективность сжатия
 - Качество поиска для запросов, связанных с СПбГУ/МГУ
-
-## Авторы
-
-Проект разработан в рамках курса по информационному поиску.

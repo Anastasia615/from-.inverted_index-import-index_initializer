@@ -4,3 +4,8 @@ numpy
 nltk
 pymorphy2
 tqdm
+telethon
+pandas
+matplotlib
+python-dotenv
+pytz
