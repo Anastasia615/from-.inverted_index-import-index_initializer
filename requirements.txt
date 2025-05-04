@@ -1,0 +1,6 @@
+click
+flask
+numpy
+nltk
+pymorphy2
+tqdm
