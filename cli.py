@@ -30,6 +30,9 @@ def cli(ctx, database_path, methods, encoding):
 def search(ctx, query):
     """
     Поиск документов по запросу.
+    
+    Args:
+        query: Поисковый запрос (одно или несколько слов).
     """
     q = ' '.join(query)
     idx = ctx.obj['index']
