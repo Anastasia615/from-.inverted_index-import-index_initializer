@@ -4,6 +4,7 @@ version = "0.1.0"
 description = ""
 authors = ["Your Name <you@example.com>"]
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -16,7 +17,9 @@ click = "^8.1.7"
 tqdm = "^4.65.0"
 
 [tool.poetry.scripts]
-inverted-index = "cli:cli"
+collect-and-index = "collect_and_index:main"
+search = "cli:cli"
+serve = "app:main"
 
 [build-system]
 requires = ["poetry-core"]
