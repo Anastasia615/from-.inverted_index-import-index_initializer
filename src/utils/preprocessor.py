@@ -30,7 +30,6 @@ class DocumentProcessor:
         except LookupError:
             nltk.download('stopwords')
             self.stopwords_ru = stopwords.words("russian")
-        self.lemmatizer = MorphAnalyzer()
 
     def get_methods(self):
         """Возвращает список методов предобработки."""
@@ -76,8 +75,9 @@ class DocumentProcessor:
     
     def lemmatize_text(self, text):
         """Лемматизирует текст."""
+        lemmatizer = MorphAnalyzer()
         tokens = text.split()
-        lemmatized_tokens = [self.lemmatizer.parse(token)[0].normal_form for token in tokens]
+        lemmatized_tokens = [lemmatizer.parse(token)[0].normal_form for token in tokens]
         return ' '.join(lemmatized_tokens)
 
     processing_methods = {

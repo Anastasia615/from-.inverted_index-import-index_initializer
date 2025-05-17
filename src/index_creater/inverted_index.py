@@ -18,14 +18,14 @@ from tqdm import tqdm
 from src.utils.bm_search import bm_search
 from src.utils.db_reader import read_whole_content
 from src.utils.encoder import EncodedInvertedIndex, AbstractEncoder, EliasGammaEncoder, EliasDeltaEncoder
-from src.utils.preprocessor import Preprocessor
+from src.utils.preprocessor import DocumentProcessor
 
 
 class InvertedIndex:
     """
     Simple inverted index with optional Elias encoding for compression.
     """
-    def __init__(self, index_path: str, preprocessor: Preprocessor, encoder: Optional[AbstractEncoder] = None):
+    def __init__(self, index_path: str, preprocessor: DocumentProcessor, encoder: Optional[AbstractEncoder] = None):
         """
         Инициализация инвертированного индекса
         
@@ -170,18 +170,13 @@ def index_initializer(database_path: str,
         Объект инвертированного индекса
     """
     methods = preprocessor.get_methods()
-    index_path = _get_index_path(database_path, methods, encoding)
-    # Создаем директорию для индекса, если её нет
-    Path(index_path).parent.mkdir(parents=True, exist_ok=True)
+    
+    # Вместо создания директории под каждый индекс, используем общую директорию
+    index_path = 'data/index'
+    print(f"Используется индексный путь: {index_path}")
     
     # Создаем экземпляр индекса
     idx = InvertedIndex(index_path, preprocessor, encoding)
-    
-    # Если индекс не существует (не загружен), читаем документы и сохраняем индекс
-    index_file = Path(index_path) / 'index.pkl'
-    if not index_file.exists():
-        documents = read_whole_content(database_path)
-        idx.save_index()
     
     return idx
 

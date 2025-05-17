@@ -1,11 +1,11 @@
 import sqlite3
 from datetime import datetime
 from pathlib import Path
-from data_collector import collect_telegram_data
 from src.index_creater.inverted_index import index_initializer
 from src.utils.preprocessor import DocumentProcessor
 from src.index_creater.inverted_index import InvertedIndex
-from src.utils.file_utils import read_whole_content
+from src.utils.db_reader import read_whole_content
+import csv
 
 def create_database():
     """Создает SQLite базу данных с необходимой структурой."""
@@ -45,6 +45,21 @@ def save_to_database(conn, data):
     
     conn.commit()
 
+def import_csv_data(csv_path):
+    """Импортирует данные из telegram_stats.csv в формате, подходящем для базы."""
+    data = []
+    with open(csv_path, newline='', encoding='utf-8') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            data.append({
+                'university': row.get('university', ''),
+                'publication_date': row.get('publication_date', ''),
+                'message': row.get('message', ''),
+                'views': int(row.get('views', 0)),
+                'forwards': int(row.get('forwards', 0)),
+            })
+    return data
+
 def main():
     # Создаем директорию для данных, если её нет
     Path('data').mkdir(exist_ok=True)
@@ -53,9 +68,9 @@ def main():
     conn = create_database()
     
     try:
-        # Собираем данные из Telegram
-        print("Собираем данные из Telegram...")
-        telegram_data = collect_telegram_data()
+        # Импортируем данные из CSV
+        print("Импортируем данные из telegram_stats.csv...")
+        telegram_data = import_csv_data('telegram_stats.csv')
         
         # Сохраняем данные в базу
         print("Сохраняем данные в базу...")
@@ -67,19 +82,30 @@ def main():
             'lowcase',
             'normalize_spaces',
             'special_chars',
-            'remove_stopwords',
-            'lemmatize_text'
+            'remove_stopwords'
         ])
         
-        index_path = 'data/telegram_data.sqlite'
-        idx = InvertedIndex(index_path, preprocessor, encoding='delta')
+        index_path = 'data/index'
+        idx = InvertedIndex(index_path, preprocessor)
         
         # Если индекс не существует (не загружен), читаем документы и сохраняем индекс
         index_file = Path(index_path) / 'index.pkl'
         if not index_file.exists():
-            documents = read_whole_content(index_path)
+            print("Индекс не найден, создаём новый...")
+            documents = read_whole_content('data/telegram_data.sqlite')
+            print(f"Прочитано {len(documents)} документов из базы данных")
+            
+            # Добавляем документы в индекс
+            print("Добавляем документы в индекс...")
+            cursor = conn.cursor()
+            cursor.execute('SELECT id, publication_content FROM ParsedData')
+            for doc_id, content in cursor.fetchall():
+                idx.add_document(doc_id, content)
+                
+            # Сохраняем индекс
+            print("Сохраняем индекс...")
             idx.save_index()
-        
+            
         print(f"Собрано и проиндексировано {len(telegram_data)} документов")
         
     finally:

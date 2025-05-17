@@ -1,5 +1,6 @@
 # cli.py
 import click
+import sqlite3
 
 from src.index_creater.inverted_index import index_initializer
 from src.utils.preprocessor import DocumentProcessor
@@ -9,7 +10,7 @@ from src.utils.preprocessor import DocumentProcessor
 @click.option('--database-path', '-d', required=True,
               help='Путь к файлу SQLite (таблица ParsedData.publication_content)')
 @click.option('--methods', '-m', multiple=True,
-              default=['lowcase', 'normalize_spaces', 'special_chars', 'remove_stopwords', 'lemmatize_text'],
+              default=['lowcase', 'normalize_spaces', 'special_chars', 'remove_stopwords'],
               help='Методы предобработки текста')
 @click.option('--encoding', '-e', type=click.Choice(['gamma', 'delta']), default=None,
               help='Алгоритм сжатия: gamma или delta')
@@ -36,12 +37,30 @@ def search(ctx, query):
     """
     q = ' '.join(query)
     idx = ctx.obj['index']
-    results = idx.search(q)
-    if not results:
+    doc_ids = idx.search(q)
+    
+    if not doc_ids:
         click.echo('Ничего не найдено.')
         return
-    for doc_id, text in results:
-        click.echo(f'{doc_id}: {text}')
+    
+    # Получаем тексты документов из базы данных
+    db_path = ctx.parent.params['database_path']
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    
+    click.echo(f'Найдено {len(doc_ids)} документов:')
+    
+    # Выводим первые 5 результатов
+    for doc_id in doc_ids[:5]:
+        cursor.execute('SELECT publication_content FROM ParsedData WHERE id = ?', (doc_id,))
+        result = cursor.fetchone()
+        if result:
+            # Сокращаем текст для вывода
+            text = result[0]
+            short_text = text[:100] + '...' if len(text) > 100 else text
+            click.echo(f'{doc_id}: {short_text}')
+    
+    conn.close()
 
 
 if __name__ == '__main__':
