@@ -101,6 +101,28 @@ class TestInvertedIndex(unittest.TestCase):
         results = index.search("")
         self.assertEqual(results, [])
 
+    def test_save_and_load_index(self):
+        """
+        Проверяет сохранение и загрузку индекса с диска.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            index_path = Path(tmpdir)
+            index = InvertedIndex(index_path, self.doc_processor)
+            for doc_id, text in self.documents.items():
+                index.add_document(doc_id, text)
+            index.save_index()
+            # Создаем новый объект и загружаем индекс
+            new_index = InvertedIndex(index_path, self.doc_processor)
+            self.assertEqual(index.index, new_index.index)
+
+    def test_empty_index_search(self):
+        """
+        Проверяет, что поиск по пустому индексу возвращает пустой результат.
+        """
+        index = InvertedIndex(":memory:", self.doc_processor)
+        results = index.search("любой запрос")
+        self.assertEqual(results, [])
+
 class TestIndexPerformance(unittest.TestCase):
     """
     Тест производительности индексирования большого количества документов.
